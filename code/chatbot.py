@@ -42,7 +42,7 @@ def transaction_bldr(sql):
 
 def find_parent(pid):
 	try:
-		sql = "SELECT comment FROM parent_reply WHERE comment_id = '{}' LIMIT 1".format(parent_id)
+		sql = "SELECT comment FROM parent_reply WHERE comment_id = '{}' LIMIT 1".format(pid)
 		c.execute(sql)
 		result = c.fetchone()
 		if result != None:
@@ -55,7 +55,7 @@ def find_parent(pid):
 
 def find_existing_score(pid):
 	try:
-		sql = "SELECT score FROM parent_reply WHERE parent_id = '{}' LIMIT 1".format(parent_id)
+		sql = "SELECT score FROM parent_reply WHERE parent_id = '{}' LIMIT 1".format(pid)
 		c.execute(sql)
 		result = c.fetchone()
 		if result != None:
@@ -125,21 +125,20 @@ if __name__ == "__main__":
 	    created_utc = row['created_utc']
 	    score = row['score']
 	    subreddit = row['subreddit']
-	    comment_id = row['id']
+	    comment_id = row['name']
 
 	    parent_data = find_parent(parent_id)
-
-            existing_comment_score = find_existing_score(parent_id)
-            if existing_comment_score:
-                if score > existing_comment_score:
+	    if score >= 2:
+                existing_comment_score = find_existing_score(parent_id)
+                if existing_comment_score:
+                    if score > existing_comment_score:
+                        if acceptable(body):
+                            sql_insert_replace_comment(comment_id,parent_id,parent_data,body,subreddit,created_utc,score)
+                            
+                else:
                     if acceptable(body):
-                        sql_insert_replace_comment(comment_id,parent_id,parent_data,body,subreddit,created_utc,score)
-                        
-            else:
-                if acceptable(body):
-                    if parent_data:
-                        if score >= 2:
+                        if parent_data:
                             sql_insert_has_parent(comment_id,parent_id,parent_data,body,subreddit,created_utc,score)
                             paired_rows += 1
-                    else:
-                        sql_insert_no_parent(comment_id,parent_id,body,subreddit,created_utc,score)
+                        else:
+                            sql_insert_no_parent(comment_id,parent_id,body,subreddit,created_utc,score)

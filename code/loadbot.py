@@ -13,7 +13,7 @@ timeframe = '2011-07'
 sql_transaction = []
 start_row = 0
 cleanup = 1000000
-connection = sqlite3.connect('{}.db'.format(timeframe))
+connection = sqlite3.connect('/home/lara/dataset/ai-brain/{}.db'.format(timeframe))
 
 c = connection.cursor()
 
